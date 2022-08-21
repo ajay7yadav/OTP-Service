@@ -1,16 +1,13 @@
 ## OTP-Service Backend
-- In this application user signup and signin and user able to forget his password does not matter user is login or not only user should present in databse.
+- In this application user can signup and signin and user able to forget his password does not matter user is login or not only user should present in databse.
 
 ### Features
-- User Registration and Login himself
-- Password forget API if User want to change his password
-- OTP on email sent when forget,
-- OTP match then only access to change password otherwise he can not access
-- Proper error message in the case ADMIN has yet not approved/rejected the registration request
+- User Registration and Login himself.
+- Password forget API if User want to change his password.
+- OTP sent on his email when forgetting password.
+- OTP match then only access to change password otherwise he can not access.
+- Proper error message in the case User passing wrong details and request.
 - Proper validation if User Post empty request.
-
-### How is the code organized in this repo ?
-The whole repo is divided into multiple branches. Each branch contains code for a specific concept. For example session1 has the code base for user registration and login . Each branch is built on the top of the previous branch
 
 ### Prerequisite
 - Understanding of Node.js
