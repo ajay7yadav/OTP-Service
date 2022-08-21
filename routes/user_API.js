@@ -10,4 +10,9 @@ module.exports = (ap)=>{
 
     ap.post('/authentication/v1/users/forget',controller.forgetPassword);
 
+    ap.post('/authentication/v1/users/fillotp',controller.matchOTP);
+
+    ap.post('/authentication/v1/users/newpass',controller.changePassword);
+
+
 }

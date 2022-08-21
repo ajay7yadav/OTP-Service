@@ -12,6 +12,7 @@ mongoose.connect(DB.DB_URL,()=>{
 });
 
 require('./routes/user_API')(app);
+
 require('./schedular/mailSchedular').schedul();
 
 app.listen(8080,()=>{

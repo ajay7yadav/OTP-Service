@@ -4,7 +4,6 @@ const bcrypt = util.bcrypt;
 const jwt = util.jwt;
 const key = util.key
 const Notification = require('../models/notification');
-const schedular = require('../schedular/mailSchedular');
 const otpBody = require('../utils/otpBody');
 
 // Handler for signup
@@ -76,8 +75,15 @@ exports.signIn = async(req, res)=>{
     }
 }
 
+// Handler for forget and generate OTP by pass email in query parameter
+// /forget?gamil=ajay7yadav@gmail.com
+
 exports.forgetPassword = async(req, res) =>{
+    
     let mail = req.query.email;
+    if(!mail){
+        return res.status(401).send({message : "invalid query email !"});
+    }
     try{
         // Check user is avaible or not in our database
         let users = await User.findOne({email : mail});
@@ -91,7 +97,9 @@ exports.forgetPassword = async(req, res) =>{
         if(check){
             await Notification.deleteOne({createBy : mail});
         }
+        // random OTP
         let newOTP = Math.floor(10000 + Math.random()*90000);
+        // notification body
         const notiObj = {
             from : otpBody.from,
             to : users.email,
@@ -102,7 +110,7 @@ exports.forgetPassword = async(req, res) =>{
         };
         let notification = await Notification.create(notiObj);
         res.status(201).send({
-            message : ' please check your email and fill otp'
+            message : ' OTP sent in your email'
         });
     }catch(err){
         console.log(err.message);
@@ -113,8 +121,77 @@ exports.forgetPassword = async(req, res) =>{
     }
 }
 
+// Handler for match OTP
+// enter OTP in body
 exports.matchOTP = async(req, res)=>{
+    if(!req.body.otp){
+        return res.status(401).send({message : "Please enter OTP !"});
+    }
     const otp = req.body.otp;
-    let check = await Notification.find({otp : otp});
-    
+
+    try {
+        // find OTP in database
+        let matchOTP = await Notification.findOne({otp : otp});
+
+        if(!matchOTP){
+            return res.status(401).send({
+                message : ' OTP not matched ! please try again...'
+            });
+        }
+        // set to matched for future
+        matchOTP.otpStatus = otpBody.otpStatus.matched;
+        await matchOTP.save();
+        res.status(200).send({
+            message : ' OTP Matched ',
+            nextStep : "Go -> /authentication/v1/users/newpass "
+        });
+
+    }catch(err){
+        res.status(500).send({
+            message : " Internal error while matching OTP "
+        });
+    }
+}
+
+// Handler for change password
+exports.changePassword = async(req, res)=>{
+    // user give her email
+    // user new password
+    if(!req.body.email){
+        return res.status(401).send({message : "invalid field email !"});
+    }
+    const mail = req.body.email;
+    try {
+        // already present or not
+        const user = await User.findOne({email : mail});
+        if(!user){
+            return res.status(400).send({message : `'${mail}', email does not exits !`});
+        }
+        
+        let checkOtp = await Notification.findOne({createBy : mail});
+        // OTP matched or requested for changing password or not
+        if(!checkOtp || checkOtp.otpStatus == otpBody.otpStatus.unmatched){
+            return res.status(400).send({
+                message : ' Please forget the password once, you can not change dirrectly !'
+            });
+        }
+        // taking new password
+        if(!req.body.password){
+            return res.status(401).send({message : "invalid field password !"});
+        }
+        
+        const pass = bcrypt.hashSync(req.body.password,8);
+        user.password = pass;
+        await user.save();   
+        res.status(200).send({
+            message : " Password has been changed "
+        });
+
+    }catch(err){
+        console.log(err.message);
+        console.log(err);
+        res.status(500).send({
+            message : " Error while updating password ! "
+        });
+    }
 }
