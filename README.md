@@ -5,7 +5,8 @@
 - User Registration and Login himself.
 - Password forget API if User want to change his password.
 - OTP sent on his email when forgetting password.
-- OTP match then only access to change password otherwise he can not access.
+- OTP match API then only access to change password otherwise he can not access.
+- Password change API where update or insert new password
 - Proper error message in the case User passing wrong details and request.
 - Proper validation if User Post empty request.
 
